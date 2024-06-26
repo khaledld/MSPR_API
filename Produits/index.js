@@ -6,6 +6,7 @@ const cors = require("cors")
 const { Kafka } = require('kafkajs');
 
 
+
 const app = express()
 app.use(cors())
 
