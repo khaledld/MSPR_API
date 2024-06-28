@@ -30,12 +30,26 @@ services:
       - /var/log/mspr_api:/var/log/mspr_api
 
   prometheus:
-    image: prom/prometheus
+    command:
+    - --config.file=/etc/prometheus/prometheus.yml
+    - --storage.tsdb.path=/prometheus
+    - --storage.tsdb.retention.time=45d
+    - --log.level=info
+    - --web.enable-admin-api
+    - --web.enable-lifecycle
     container_name: prometheus
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    hostname: prometheus
+    image: prom/prometheus:latest
     ports:
-      - "9090:9090"
+    - published: 9090
+      target: 9090
+    restart: always
+    volumes:    
+    - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    #- ./config/prometheus/probes:/etc/prometheus/probes:ro
+    #- ./config/prometheus/jobs_targets:/etc/prometheus/jobs_targets:ro
+    #- ./config/prometheus/rules:/etc/prometheus/rules:ro
+    - prometheus_slash:/prometheus:rw
 
   grafana:
     image: grafana/grafana
@@ -54,7 +68,7 @@ services:
       - "3100:3100"
     command: -config.file=/etc/loki/local-config.yml
     volumes:
-      - ./loki-config.yaml:/etc/loki/local-config.yml
+      - ./loki-config.yml:/etc/loki/local-config.yml
 
   promtail:
     image: grafana/promtail:2.3.0
@@ -65,4 +79,5 @@ services:
     command: -config.file=/etc/promtail/config.yml
 
 volumes:
-  grafana-storage:
+  grafana-storage: {}
+  prometheus_slash: {}
